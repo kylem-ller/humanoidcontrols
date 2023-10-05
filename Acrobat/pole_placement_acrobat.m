@@ -34,20 +34,12 @@ A(theta0, theta20) = [0       1 0       0; ...
                       C1+C3/2 0 C2+C4/2 0; ...
                       0       0 0       1; ... 
                       C3      0 C4      0];
-B = [0 0 0 1]';
-R = [thetaR 0 theta2R 0 -1 -1]';
-%R = [thetaR 0 theta2R 0]';
+B = [0 1/2 0 1]';
+R = [thetaR 0 theta2R 0]';
 C = [1 0 0 0; 0 0 1 0];
 D = [0 0]';
-poles = [-5+4*1i -5-4*1i -1+1.3*1i -1-1.3*1i -3+3*i -3-3*i];
-%poles = [-20+8*1i -20-8*1i -4+2*1i -4-2*1i];
-%K = place(double(A(theta(1),theta2(1))), B, poles);
-
-A_now = double(A(theta(1),theta2(1)));
-At = [A_now zeros(4,2); C zeros(2,2)];
-Bt = [B; 0; 0];
-Br = [zeros(4,1); 1; 1];
-Kt = place(At,Bt,poles);
+poles = [-40+10i -40-10i -15+5i -15-5i ];
+K = place(double(A(theta(1),theta2(1))), B, poles);
 
 % Transfer Functions
 s = tf('s');
@@ -60,6 +52,7 @@ w2 = [w2 0 0 0];
 a = [0 0 0 0];
 a2 = [0 0 0 0];
 aM = [0 0 0 0];
+int = [0 0 0 0; 0 0 0 0];
 int1 = [0 0 0 0];
 int2 = [0 0 0 0];
 
@@ -81,22 +74,21 @@ pause(1)
 
 i = 0;
 while (true)
-    %theta_2_goal = -pi/4*sin(i*freq/5000000000)+pi/2;
-    %theta_goal = get_theta(theta_1_goal, theta_2_goal);
-    %R = [theta_goal 0 theta_2_goal 0]';
+    % Upate Goal
+    R(3) = -pi/4*sin(i*freq*5)+pi/2;
 
     % Update K
-    % K = place(double(A(theta(1),theta2(1))), B, poles);
+    K = place(double(A(theta(1),theta2(1))), B, poles);
 
     % Update Physics
     a2 = shift(a2, aM(1) + double(a2G(theta(1), theta2(1))));
     a = shift(a, a2(1)/2 + double(aG(theta(1), theta2(1))));
-%     if (w ~= 0)
-%         a(1) = a(1) - abs(w(1))/w(1) * friction/100 *g/(2*l);
-%     end
-%     if (w2 ~= 0)
-%         a2(1) = a2(1) - abs(w2(1))/w2(1) * friction/100 *g/l;
-%     end
+    if (w ~= 0)
+        a(1) = a(1) - abs(w(1))/w(1) * friction/100 *g/(2*l);
+    end
+    if (w2 ~= 0)
+        a2(1) = a2(1) - abs(w2(1))/w2(1) * friction/100 *g/l;
+    end
     
     theta = z_transfer(theta, [w; a], [1/s; 1/s^2], freq);
     theta2 = z_transfer(theta2, [w2; a2], [1/s; 1/s^2], freq);
@@ -106,11 +98,7 @@ while (true)
     w2 = z_transfer(w2, a2, 1/s, freq);
 
     % Update Motor Acc
-    int1 = z_transfer(int1, theta, -1/s, freq);
-    int2 = z_transfer(int2, theta2, -1/s, freq);
-
-    state = [theta(1) w(1) theta2(1) w2(1) int1(1) int2(1)]';
-    %state = [theta(1) w(1) theta2(1) w2(1)]';
+    state = [theta(1) w(1) theta2(1) w2(1)]';
     aM = shift(aM, K*(R-state));
     disp(aM(1))
 
@@ -118,8 +106,9 @@ while (true)
     if (mod(i, cast(1/100 / freq,"uint8")) == 0)
         % Edit Figure
         theta1 = get_theta1(theta(1), theta2(1));
+        theta1R = get_theta1(R(1), R(3));
         [x1,y1,x2,y2] = coords(l,theta1,theta2(1));
-        [xR1,yR1,xR2,yR2] = coords(l,theta1R,theta2R);
+        [xR1,yR1,xR2,yR2] = coords(l,theta1R,R(3));
         set(l1,'XData',[0 x1],'YData',[0 y1]);
         set(l2,'XData',[x1 x2],'YData',[y1 y2]);
         set(ball,'XData',x2,'YData',y2);
