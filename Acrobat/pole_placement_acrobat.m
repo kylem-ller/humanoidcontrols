@@ -5,7 +5,7 @@ freq = 5/1000; % ms
 friction = 5; % percent max grav acc
 
 % Initial States
-theta = 0.1;
+theta = 0;
 theta2 = pi/2;
 w = 0;
 w2 = 0;
@@ -15,7 +15,7 @@ thetaR = 0;
 theta2R = pi/2;
 
 % Ranges
-theta2Min = pi/6;
+theta2Min = pi/16;
 theta2Max = 11*pi/6;
 aMax = 40;
 
@@ -38,8 +38,7 @@ B = [0 1/2 0 1]';
 R = [thetaR 0 theta2R 0]';
 C = [1 0 0 0; 0 0 1 0];
 D = [0 0]';
-poles = [-40+10i -40-10i -15+5i -15-5i ];
-K = place(double(A(theta(1),theta2(1))), B, poles);
+poles = [-20+8i -20-8i -10+5i -10-5i ];
 
 % Transfer Functions
 s = tf('s');
