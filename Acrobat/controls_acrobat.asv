@@ -24,14 +24,11 @@ aG(theta0, theta20) = g*sin(theta0)/(2*l*sin(theta20/2));
 a2G(theta0, theta20) = g*sin(theta0+theta20/2-pi/2)/l;
 
 % Control System
-A(theta0, theta20) = [0                1 0                -1/2; ...
-                      diff(aG,theta0)  0 diff(aG,theta20)  0; ...
-                      0                0 0                 1; ... 
-                      diff(a2G,theta0) 0 diff(a2G,theta20) 0];
-B = [0 0 0 1]';
 R = [thetaR 0 theta2R 0]';
+B = [0 1/2 0 1]';
 C = [1 0 0 0; 0 0 1 0];
 D = [0 0]';
+F = [0 0 0 0]';
 
 % C2 = g*cos(theta_1_goal)/(2*l*sin(theta2/2));
 % C3 = g*sin(theta_1_goal)*cos(theta2/2)/(4*l*(sin(theta2/2)^2));
