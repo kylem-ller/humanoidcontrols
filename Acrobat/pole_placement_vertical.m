@@ -5,7 +5,7 @@ freq = 5/1000; % ms
 friction = 5; % percent max grav acc
 
 % Initial States
-theta = 0.1;
+theta = 0;
 theta2 = pi/2;
 w = 0;
 w2 = 0;
@@ -15,7 +15,7 @@ thetaR = 0;
 theta2R = pi/2;
 
 % Ranges
-theta2Min = pi/6;
+theta2Min = pi/16;
 theta2Max = 11*pi/6;
 aMax = 40;
 
@@ -35,23 +35,10 @@ A(theta0, theta20) = [0       1 0       0; ...
                       0       0 0       1; ... 
                       C3      0 C4      0];
 B = [0 1/2 0 1]';
-%R = [thetaR 0 theta2R 0 -1 -1]';
 R = [thetaR 0 theta2R 0]';
 C = [1 0 0 0; 0 0 1 0];
 D = [0 0]';
-poles = [-30+6*1i -30-6*1i -6+1*1i -6-1*1i ];%-3+3*i -3-3*i];
-%poles = [-20+8*1i -20-8*1i -4+2*1i -4-2*1i];
-%poles = [-3+10^12*eps(0) -3-10^12*eps(0) -1+10^12*eps(0) -1-10^12*eps(0) -1+10^12*eps(0)*i -1+10^12*eps(0)*i];
-%poles = [-30 -28 -1+2i -6 -4 -1-2i];
-K = place(double(A(theta(1),theta2(1))), B, poles);
-
-A_now = double(A(theta(1),theta2(1)));
-%polesOpenLoop=eig(A_now);
-%poles = [3*polesOpenLoop; 10*min(polesOpenLoop);rank 10*min(polesOpenLoop)];
-At = [A_now zeros(4,2); C zeros(2,2)];
-polesOpenLoop=eig(At);
-Bt = [B; 0; 0];
-%K = place(At,Bt,poles);
+poles = [-20+8i -20-8i -10+5i -10-5i ];
 
 % Transfer Functions
 s = tf('s');
@@ -64,9 +51,6 @@ w2 = [w2 0 0 0];
 a = [0 0 0 0];
 a2 = [0 0 0 0];
 aM = [0 0 0 0];
-int = [0 0 0 0; 0 0 0 0];
-int1 = [0 0 0 0];
-int2 = [0 0 0 0];
 
 % Initial Figure
 f = figure();
@@ -95,12 +79,12 @@ while (true)
     % Update Physics
     a2 = shift(a2, aM(1) + double(a2G(theta(1), theta2(1))));
     a = shift(a, a2(1)/2 + double(aG(theta(1), theta2(1))));
-%     if (w ~= 0)
-%         a(1) = a(1) - abs(w(1))/w(1) * friction/100 *g/(2*l);
-%     end
-%     if (w2 ~= 0)
-%         a2(1) = a2(1) - abs(w2(1))/w2(1) * friction/100 *g/l;
-%     end
+    if (w ~= 0)
+        a(1) = a(1) - abs(w(1))/w(1) * friction/100 *g/(2*l);
+    end
+    if (w2 ~= 0)
+        a2(1) = a2(1) - abs(w2(1))/w2(1) * friction/100 *g/l;
+    end
     
     theta = z_transfer(theta, [w; a], [1/s; 1/s^2], freq);
     theta2 = z_transfer(theta2, [w2; a2], [1/s; 1/s^2], freq);
@@ -110,14 +94,7 @@ while (true)
     w2 = z_transfer(w2, a2, 1/s, freq);
 
     % Update Motor Acc
-    int1 = z_transfer(int1, theta, -1/s, freq);
-    int2 = z_transfer(int2, theta2, -1/s, freq);
-
-    %state = [theta(1) w(1) theta2(1) w2(1) int1(1) int2(1)]';
     state = [theta(1) w(1) theta2(1) w2(1)]';
-    %int = z_transfer(int2, [theta theta2]'-[R(1) R(3)]', 1/s, freq);
-
-    % aM = shift(aM, K(1:4)*state + K(5:6)*int(:,1));
     aM = shift(aM, K*(R-state));
     disp(aM(1))
 
