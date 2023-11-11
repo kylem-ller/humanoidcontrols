@@ -16,9 +16,9 @@ class Controller {
   
   public:
     // Objects
-    Motor* LW = new Motor(39, 36, 21, 17, 16, 620); // Maybe inaccurate PPR
-    Motor* RW = new Motor(39, 36, 21, 17, 16, 620);
-    Motor* A2 = new Motor(39, 36, 21, 17, 16, 540);
+    Motor* LW = new Motor(4, 14, 21, 17, 16, 620); // Maybe inaccurate PPR
+    Motor* RW = new Motor(15, 12, 33, 26, 25, 620);
+    Motor* A2 = new Motor(19, 32, 27, 18, 5, 540);
     IMU imu;
 
     Controller() {

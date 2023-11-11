@@ -17,7 +17,7 @@ volatile bool buttonIsPressed = false;
 enum Case { IDLE, CALIBRATE, STABLE_DRIVE };
 Case c = IDLE;
 
-// Controller
+// Controller   
 Controller controller;
 
 // Timers
