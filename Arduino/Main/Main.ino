@@ -1,88 +1,80 @@
 #include <Arduino.h>
 #include "Controller.h"
-#include "Wire.h"
-#include <arduino-timer.h>
 
-#define BTN 12
+#define BTN 39
 #define LED_PIN 13
 
-//Setup variables ------------------------------------
-const long pi = 3.14159;
-const int freq = 5000;
-const int pwmChannel = 0;
-const int resolution = 8;
-volatile bool buttonIsPressed = false;
-
 // State Machine
-enum Case { IDLE, CALIBRATE, STABLE_DRIVE };
+enum Case { IDLE, CALIBRATE, BALANCE };
 Case c = IDLE;
+volatile bool buttonIsPressed = false;
 
 // Controller   
 Controller controller;
+const float pi = 3.14159;
 
 // Timers
-long buttonTimer;
-long calibrateTimer;
-auto imuTimer = timer_create_default();
-auto motorTimer = timer_create_default();
+int mainTimer;
+int buttonTimer;
+int calibrateTimer;
+hw_timer_t * imuTimer = NULL;
+hw_timer_t * motorTimer = NULL;
 
 //Initialization ------------------------------------
-void IRAM_ATTR isr() {
+void IRAM_ATTR buttonISR() {
   buttonIsPressed = true;
 }
 
+void IRAM_ATTR imuISR() {
+  controller.imu.update();
+}
+
 void setup() {
+  Serial.begin(9600);
   pinMode(BTN, INPUT);
   pinMode(LED_PIN, OUTPUT);
-  attachInterrupt(BTN, isr, RISING);
+  attachInterrupt(BTN, buttonISR, RISING);
 
-  ledcSetup(pwmChannel, freq, resolution);
-
+  mainTimer = millis();
   buttonTimer = millis();
-  imuTimer.every(50, updateIMU);
+  //timerInit();
 
-  Wire.begin();
-  delay(10);
-  controller.init();
+  controller.imu.init();
 }
 
 void loop() {
-  delay(100);
+  imuISR2();
+
+  while(!pastTime(mainTimer, 50)) {}
+  mainTimer = millis();
+
   switch (c) {
     case IDLE:
-      if (checkForButtonPress()) {
-        c = CALIBRATE;
-        calibrateTimer = millis();
+      if (checkForButtonPress()) { // Check if button has been pressed
+        toCalibrate(); // Change state to calibrate
       }
       break;
     case CALIBRATE:
-      if (checkForButtonPress()) {
-        c = IDLE;
+      if (checkForButtonPress()) { // Check if button has been pressed
+        toIdle(); // Change state to idle
       }
-      if ((millis() - buttonTimer) / 250 % 2) {
-        led_on();
-      } else {
-        led_off();
-      }
-      if (millis() - buttonTimer > 3000) {
-        c = STABLE_DRIVE;
-        controller.zeroState();
+      flashLight(); // Blink the LED
+      if (pastTime(buttonTimer, 3000)) { // Check if 3 seconds has passed in calibrate mode
+        toBalance(); // Change state to balancing
       }
       break;
-    case STABLE_DRIVE:
-      if (checkForButtonPress() || controller.falling()) {
-        c = IDLE;
-        controller.stopActuators();
+    case BALANCE:
+      if (checkForButtonPress() || controller.falling()) { // Check if button has been pressed, or if the bot has tilted too much
+        toIdle(); // Change state to idle (turn off actuators)
       }
-      controller.updateState();
-      long target[6] = {0, 0, 0, 0, pi, 0};
-      controller.setTarget(target);
+      //float target[6] = {0, 0, 0, 0, pi, 0};
+      //controller.setTarget(target); // Run actuators to stabilize at position & velocity targets
       break;
   }
 }
 
 bool checkForButtonPress() {
-  if (millis() - buttonTimer > 50) {
+  if (!pastTime(buttonTimer, 750)) {
     buttonIsPressed = false;
   }
   if (buttonIsPressed) {
@@ -93,31 +85,53 @@ bool checkForButtonPress() {
   return false;
 }
 
-void led_on() {
+bool pastTime(int timer, int time) {
+  return millis() - timer > time;
+}
+
+void toIdle() {
+  Serial.println("To Idle");
+  c = IDLE;
+  ledOff();
+  //controller.stopActuators();
+}
+
+void toBalance() {
+  Serial.println("To Balance");
+  c = BALANCE;
+  ledOn();
+  //controller.zeroState();
+}
+
+void toCalibrate() {
+  Serial.println("To Calibrate");
+  c = CALIBRATE;
+  calibrateTimer = millis();
+}
+
+void flashLight() {
+  if ((millis() - buttonTimer) / 500 % 2) {
+    ledOn();
+  } else {
+    ledOff();
+  }
+}
+
+void ledOn() {
   digitalWrite(LED_PIN, HIGH);
 }
 
-void led_off() {
+void ledOff() {
   digitalWrite(LED_PIN, LOW);
 }
 
-void updateLW() {
-  controller.LW->update();
-}
-
-void updateRW() {
-  controller.RW->update();
-}
-
-void updateLA2() {
-  controller.LA2->update();
-}
-
-void updateRA2() {
-  controller.RA2->update();
-}
-
-bool updateIMU(void *) {
+void imuISR2() { // temporary function until interrupt & i2c conflict resolved
   controller.imu.update();
-  return true;
+}
+
+void timerInit() {
+  imuTimer = timerBegin(0, 80, true);
+  timerAttachInterrupt(imuTimer, &imuISR, true);
+  timerAlarmWrite(imuTimer, 50000, true); // 50000 ticks -> 50 ms
+  timerAlarmEnable(imuTimer);
 }

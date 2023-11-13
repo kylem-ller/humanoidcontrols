@@ -3,8 +3,8 @@
 
 class Motor {
   private:
-    // const long Ts;
-    // const long Vm;
+    // const float Ts;
+    // const float Vm;
 
     int PWM;
     int IN_1;
@@ -12,17 +12,15 @@ class Motor {
 
     int ticks;
     int ticksRef;
-    long tickTimer;
-    long tickRate;
+    float tickTimer;
+    float tickRate;
 
-    long tickToRad;
+    float tickToRad;
 
     ESP32Encoder encoder;
   
   public:
-    int ENC_A;
-
-    Motor(int ENC_A, int ENC_B, int PWM, int IN_1, int IN_2, long PPR) {
+    Motor(int ENC_A, int ENC_B, int PWM, int IN_1, int IN_2, float PPR) {
       encoder.attachHalfQuad(ENC_A, ENC_B);
       
       this->PWM = PWM;
@@ -40,23 +38,23 @@ class Motor {
     }
 
     void update() {
-      if (digitalRead(ENC_B) > 0) {
+      /*if (digitalRead(ENC_B) > 0) {
         ticks++;
       } else {
         ticks--;
       }
       tickRate = 1 / (millis() - tickTimer);
-      tickTimer = millis();
+      tickTimer = millis();*/
     }
 
-    void setTorque(long torque) {
-      setVoltage(torque); // CHANGE
+    void setTorque(float torque) {
+      setVoltage(torque) ; // CHANGE
     }
 
-    void setVoltage(long voltage) {
+    void setVoltage(float voltage) {
       int pwm = max(int(voltage * 255 / 12), 255);
       pwm = constrain(pwm, -255, 255);
-      if (abs(pwn) < 1) {
+      if (abs(pwm) < 1) {
         pwm = 0;
       }
       analogWrite(abs(pwm), PWM);
@@ -72,15 +70,15 @@ class Motor {
       }  
     }
 
-    long getPos() {
+    float getPos() {
       return encoder.getCount() * tickToRad;
     }
 
-    long getVel() {
-      return tickRate * tickToRad;
+    float getVel() {
+      return tickRate;// * tickToRad;
     }
 
-    long setRef() {
+    float setRef() {
       encoder.clearCount();
     }
 };
