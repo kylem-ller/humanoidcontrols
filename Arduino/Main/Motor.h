@@ -6,11 +6,11 @@ class Motor {
     float Vm = 2 * 3.1415 * 6000 / 60;
 
     int ENC_A, ENC_B, PWM, IN_1, IN_2, ticks;
-    float torqueTimer, tickTimer, tickRate, radToTick, friction, old_torque, pwm_old;
-
-    ESP32Encoder encoder;
+    float torqueTimer, tickTimer, tickRate, radToTick;
   
   public:
+    ESP32Encoder encoder;
+
     Motor() {}
 
     void init(int ENC_A, int ENC_B, int PWM, int IN_1, int IN_2, int reduction) {
@@ -25,14 +25,12 @@ class Motor {
       digitalWrite(IN_1, LOW);
       digitalWrite(IN_2, LOW);
 
-      encoder.attachHalfQuad(ENC_A, ENC_B);
+      encoder.attachFullQuad(ENC_A, ENC_B);
       encoder.setCount(0);
       
-      radToTick = (12 * reduction / (2 * 3.1415));
+      radToTick = (2 * 3.1415 * reduction); // * (2 * 3.1415));
       Ts = Ts * reduction;
       Vm = Vm / reduction;
-      friction = 0.5 * Ts;
-      pwm_old = 0;
 
       tickTimer = millis();
       torqueTimer = millis();

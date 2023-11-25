@@ -84,6 +84,7 @@ B_now = double(B(0,0,0,0,pi,0));
 
 [K,~,~] = dlqr(A_now, B_now, Q, R);
 % K = lqr(A_now, B_now, Q, R);
+K = K
 
 file = fullfile(pwd,'Arduino','Main','K.h');
 fileID = fopen(file,'w');

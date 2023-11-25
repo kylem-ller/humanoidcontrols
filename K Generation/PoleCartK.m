@@ -1,19 +1,19 @@
 % Physics Variables
 L1 = 5 * 0.0254; % m
-Lc1 = 0.5 * L1;
+Lc1 = 0.3 * L1;
 L2 = 3.5 / 5 * L1;
 g = 9.81;
-freq = 30/1000; % ms
+freq = 10/1000; % ms
 mw = 0.05;
 m1 = 1.1;
 wm = 2 * 3.1415 * 6000 / 60 / 40;
 Tm = 0.0025 * 40;
-r = 80 / 1000;
+r = 40 / 1000;
 
 % Equations Of Motion
 x0 = sym('x',[4 1]); % m2*L2*(L2-L1*cos(x0(3)))
 % M = [r*(mw+m1) -r*(mw+m1)-m1*Lc1*cos(x0(3)); -r*m1*Lc1*cos(x0(3)) r*m1*Lc1*cos(x0(3))+m1*Lc1^2];
-M = [mw+m1 -m1*Lc1*cos(x0(3)); -m1*Lc1*cos(x0(3)) -r*m1*Lc1*cos(x0(3))+m1*Lc1^2];
+M = [mw+m1 -m1*Lc1*cos(x0(3)); -m1*Lc1*cos(x0(3)) m1*Lc1^2];
 V = [m1*Lc1*x0(4)*sin(x0(3)); 0];
 G = [0; -m1*g*Lc1*sin(x0(3))];
 T = [-Tm/r*(x0(2)/r+x0(4))/wm; 0];
@@ -57,7 +57,7 @@ B_now = double(B(0,0,0,0));
 
 [K,~,~] = dlqr(A_now, B_now, Q, R);
 % K = lqr(A_now, B_now, Q, R);
-
+K = K
 
 file = fullfile(pwd,'Arduino','Main','K.h');
 fileID = fopen(file,'w');
