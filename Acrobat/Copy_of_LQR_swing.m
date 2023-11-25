@@ -9,7 +9,7 @@ m1 = 0.2; % kg
 m2 = 0.2;
 
 % Initial States
-theta1 = 0;
+theta1 = 0.05;
 theta2 = pi;
 w1 = 0;
 w2 = 0;
@@ -38,11 +38,11 @@ f2v = f2(x0(1),x0(2),x0(3),x0(4));
 
 d1 = diff(f1,x0(1));
 d1 = d1(x0(1),x0(2),x0(3),x0(4));
-d2 = diff(f1,x0(1));
+d2 = diff(f1,x0(2));
 d2 = d2(x0(1),x0(2),x0(3),x0(4));
-d3 = diff(f1,x0(1));
+d3 = diff(f1,x0(3));
 d3 = d3(x0(1),x0(2),x0(3),x0(4));
-d4 = diff(f1,x0(1));
+d4 = diff(f1,x0(4));
 d4 = d4(x0(1),x0(2),x0(3),x0(4));
 
 % Control System
