@@ -14,15 +14,14 @@ class IMU {
   public:
     LSM6DSO myIMU;
 
-    IMU() {
-    }
+    IMU() {}
 
     void init() {
       Wire.begin(23, 22);
       delay(10);
       myIMU.begin();
       myIMU.initialize(BASIC_SETTINGS);
-      setRef();
+      kalman.setQbias(0.01);
     }
 
     void update() {
@@ -47,14 +46,14 @@ class IMU {
     }
 
     float getVel() {
-      return gyroX  * DEG_TO_RAD;
+      return gyroX * DEG_TO_RAD;
     }
 
     void setRef() {
       accY = myIMU.readFloatAccelY();
       accZ = myIMU.readFloatAccelZ();
 
-      double roll  = atan2(accY, accZ) * RAD_TO_DEG;
+      double roll = atan2(accY, accZ) * RAD_TO_DEG;
       kalman.setAngle(roll);
 
       gyroXangle = roll;

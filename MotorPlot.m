@@ -22,9 +22,12 @@
 I = 0.3177732654;
 w_s1 = 6000*0.10472;
 wm_s2 = 8400*0.10472;
-Pm_s12 = 2*15*1000;
 
-syms Pm wm w
+Pm_c = 2*15*1000;
+wm_c = 150 * 2.21817385041;
+w_c = 130 * 2.21817385041;
+
+syms Pm wm w Pm_t
 assume(Pm,"real")
 assume(wm,"real")
 assume(w,"real")
@@ -32,32 +35,52 @@ assume(Pm,"positive")
 assume(wm,"positive")
 assume(w,"positive")
 
-c(wm,w) = 4*Pm_s12/(I*wm^2*w^2)*(wm-w);
+c = 4*Pm_c/(I*wm_c^2*w_c^2)*(wm_c-w_c);
 
-a_s1(Pm,wm,w) = 4*Pm/(I*wm^2)*(wm-w);
-a_s2(Pm,wm,w) = a_s1(Pm,wm,w) + c(Pm,wm,w)*w^2;
+% a_s1(Pm,wm,w) = 4*Pm/(I*wm^2)*(wm-w);
+% a_s2(Pm,wm,w) = a_s1(Pm,wm,w) + c*w^2;
+% 
+% inv_a_s1(Pm,wm,w) = 1/a_s1(Pm,wm,w);
+% inv_a_s2(wm,w) = 1/a_s2(Pm,wm,w);
 
-inv_a_s1(Pm,wm,w) = 1/a_s1(Pm,wm,w);
-inv_a_s2(wm,w) = 1/a_s2(Pm,wm,w);
+t_s1(Pm,wm,w) = I*wm^2/(4*Pm)*(log(wm) - log(wm - w));%int(1/a_s1(Pm,wm,w),0,w);
+A(Pm,wm,w) = (4*Pm)/(I*wm^2);
+t_s2222(Pm,wm,w) = sqrt(A(Pm,wm,w))*sqrt(A(Pm,wm,w) - 4*wm*c);
+t_s222(Pm,wm,w) = 2*atanh((A(Pm,wm,w) - 2*c*w)/t_s2222(Pm,wm,w))/t_s2222(Pm,wm,w);
+t_s2(Pm,wm,w) = t_s222(Pm,wm,w) - t_s222(Pm,wm,0);
+% t_s2(Pm,wm,w) = int(inv_a_s2,w,0,w);
+hold on
+fplot(t_s1(Pm_c,wm_s2,w), w/0.10472, [0, 1000]);
+fplot(t_s2(Pm_c,wm_s2,w), w/0.10472, [0, 1000]);
+xlim([0,10]);
+ylim([0,9000]);
+% min1 = 0 == 2*log(wm) - 2*log(wm-w_arr1(i)) - w_arr1(i)/(wm-w_arr1(i));
 
-t_s1(Pm,wm,w) = integral(inv_a_s1,0,w);
-t_s2(Pm,wm,w) = integral(inv_a_s2,0,w);
+% t = linspace(0.01,10,100);
+% Pm_twm = linspace(0.01,10,100);
+% for i = 1:length(t)
+%     eqn1 = t(i) == t_s1(Pm,wm,w_s1);
+%     Pm_t(wm) = solve(eqn1, Pm);
+%     min = diff(Pm_t, wm);
+%     wm_t = solve(0 == min, Pm_t);
+%     Pm_twm(i) = double(Pm_t(wm_t));
+% end
+% plot(t, Pm_twm)
 
-t = linspace(0.01,10,100);
-for i = 1:length(t)
-    Pm_t = solve t[i] = t_s1(Pm, wm) for Pm @ w
-    min = diff(Pm_t, wm) @ w
-    wm_t = solve 0 = min for wm
-    Pm_twm[i] = Pm_t(wm_t)
-end
-
-w_arr1 = linspace(0.01,wm*0.995,100);
-for i = 1:length(t)
-    min = diff(Pm_s12, wm) @ w_arr1
-    wm_t = solve 0 = min for wm
-    t_wm2[i] = t_s1(Pm_s12)
-end
-w_arr2 = linspace(0.01,600,100);
+% w_arr1 = linspace(10,w_s1,100);
+% 
+% w_arr2 = linspace(0.1,w_s1,100);
+% wm_arr1 = linspace(0.1,w_s1,100);
+% wm_arr2 = linspace(0.1,w_s1,100);
+% for i = 1:length(t)
+%     min1 = 0 == 2*log(wm) - 2*log(wm-w_arr1(i)) - w_arr1(i)/(wm-w_arr1(i));
+%     %min2 = diff(t_s2(Pm_c,wm,w_arr2(i)), wm);
+%     test = vpasolve(min1, wm, w_arr1(i))
+%     wm_arr1(i) = vpasolve(min1, wm, w_arr1(i));
+%     %wm_arr2(i) = double(solve(0 == min2, wm));
+% end
+% plot(w_arr1, wm_arr1)%, w_arr2, wm_arr2)
+% w_arr2 = linspace(0.01,600,100);
 
 
 
