@@ -12,6 +12,8 @@ class Controller {
     const float delta = 0.1;
     float state[6];
     float target[6];
+    const float k2[2][6] = {{1, 2, 0, 0.5, 20, 0}, {0, 0, 0, 0, 0, 0}}; // Val 1 -> X Pos, Val 2 -> theta Pos, Val 4 -> X Vel, Val 5 -> Theta Vel
+    const float k3[2][6] = {{20, 2, 0, 5, 40, 0}, {0, 0, 0, 0, 0, 0}};
     const float fallingBound = pi/3;
   
   public:
@@ -24,7 +26,7 @@ class Controller {
     Controller() {}
 
     void init() {
-      LW.init(14, 4, 21, 17, 16, 40);
+      LW.init(14, 4, 21, 16, 17, 40);
       RW.init(12, 15, 33, 26, 25, 40);
       A2.init(19, 32, 27, 18, 5, 45);
       imu.init();
@@ -54,23 +56,21 @@ class Controller {
 
     void updateState() {
       state[0] = r * (-imu.getPos() + (LW.getPos() + RW.getPos()) / 2);
-      state[1] = r * (-imu.getVel() + (LW.getVel() + RW.getVel()) / 2);
-      state[2] = imu.getPos();
-      state[3] = imu.getVel();
-      state[4] = A2.getPos();
+      state[1] = imu.getPos();
+      state[2] = A2.getPos();
+      state[3] = r * (-imu.getVel() + (LW.getVel() + RW.getVel()) / 2);
+      state[4] = imu.getVel();
       state[5] = A2.getVel();
-      Serial.println(imu.getPos());
-      controlActuators();
     }
 
     void controlActuators() {
       float TW = 0;
       float TA2 = 0;
       for (int i = 0; i < 6; i++) {
-        TW += k[0][i] * (target[i] - state[i]);
-        TA2 += k[1][i] * (target[i] - state[i]);
+        TW += k2[0][i] * (target[i] - state[i]);
+        TA2 += k2[1][i] * (target[i] - state[i]);
       }
-      // Serial.println(255 * TW);
+      Serial.println(255 * TW);
       LW.setPWM(TW);
       RW.setPWM(TW);
       A2.setPWM(TA2);

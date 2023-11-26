@@ -83,7 +83,7 @@ void loop() {
         controller.A2.update();
 
         //Serial.println(controller.imu.getPos(), 5);
-        float target[6] = {0, 0, 0, 0, pi, 0};
+        float target[6] = {0, 0, 0, 0, 0, 0};
         controller.setTarget(target); // Run actuators to stabilize at position & velocity targets
       }
       break;

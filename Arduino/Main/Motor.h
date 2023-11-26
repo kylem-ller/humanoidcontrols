@@ -68,8 +68,8 @@ class Motor {
     void setPWM(float voltage) {
       // int pwm = constrain(int(floatPWM), -255, 255);
       int pwm = constrain(int(255 * voltage), -255, 255);
-      analogWrite(PWM, abs(pwm));
-      if (pwm == 0) {
+      analogWrite(PWM, abs(pwm + 100));
+      if (abs(pwm) < 1) {
         digitalWrite(IN_1, LOW);
         digitalWrite(IN_2, LOW);
       } else if (pwm > 0) {
