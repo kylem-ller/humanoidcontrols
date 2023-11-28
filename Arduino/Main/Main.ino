@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Controller.h"
 
-#define BTN 39
+#define BTN 34
 #define LED_PIN 13
 
 // State Machine

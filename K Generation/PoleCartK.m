@@ -25,6 +25,14 @@ T = [Tm/r*(v0(1)-(x0(2)/r+x0(4))/wm); 0];
 % V = [m2*L1*L2*x0(4)*(2*x0(2)+x0(4))*sin(x0(3)); -m2*L1*L2*x0(2)^2*sin(x0(3))];
 % G = [-m1*g*Lc1*sin(x0(1))+m2*g*(-L1*sin(x0(1))+L2*sin(x0(1)+x0(3))); m2*g*L2*sin(x0(1)+x0(3))];
 
+% Transformation
+L3 = sqrt(L1^2+Lc2^2-2*L1*Lc2*cos(a2));
+dL3 = (L1*Lc2*v2*sin(a2))/L3;
+a2c = a1 - asin(Lc2*sin(a2)/L3);
+v2c = v1 - Lc2/L3*(v2*cos(a2)-(dL3/L3*sin(a2)))/(L3^2*sqrt(1-((Lc2*sin(a2))/L3)^2));
+ac = (m1*a1+m2*a2c)/(m1+m2);
+vc = (m1*v1+m2*v2c)/(m1+m2);
+
 % Control System
 f = [x0(end/2+1:end); M^(-1)*(T-V-G)];
 A(s0) = freq * jacobian(f, x0) + eye(4);
