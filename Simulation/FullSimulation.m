@@ -1,5 +1,5 @@
 % Physics Setup
-freq = 10 / 1000; % s to ms
+freq = 20 / 1000; % s to ms
 LoadFullDynamics(@LoadRobotKinematics, true, freq);
 
 % Initial States & Targets
@@ -35,15 +35,18 @@ while (true)
     A_now = double(A(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
     B_now = double(B(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
     H_now = double(H(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
+%     A_now = double(A(0,0,0,0,0,0,0,0));
+%     B_now = double(B(0,0,0,0,0,0,0,0));
+%     H_now = double(H(0,0,0,0,0,0,0,0));
 
     q = H_now*x;
     q(2:3) = q(2:3) - 2*pi*floor((x(1:2)+pi)/(2*pi));
-    [K,~,~] = dlqr(H_now * A_now * H_now^-1, H_now * B_now, Q, R);
+    [K,~,~] = dlqr(A_now, B_now, Q, R);
 
     % u = u + K*(q_ref-x)
     u = K*(q_ref-q)
-    u(1) = max(min(2,u(1)), -2);
-    u(2) = max(min(2,u(2)), -2);
+    u(1) = max(min(1,u(1)), -1);
+    u(2) = max(min(1,u(2)), -1);
     
     i = i + 1;
     if (mod(i, cast(1/100 / freq,"uint8")) == 0)

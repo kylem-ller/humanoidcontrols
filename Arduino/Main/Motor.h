@@ -2,11 +2,8 @@
 
 class Motor {
   private:
-    float Ts = 0.0025;
-    float Vm = 2 * 3.1415 * 6000 / 60;
-
     int ENC_A, ENC_B, PWM, IN_1, IN_2, ticks;
-    float torqueTimer, tickTimer, tickRate, radToTick;
+    float tickTimer, tickRate, radToTick;
     
     ESP32Encoder encoder;
   
@@ -29,11 +26,8 @@ class Motor {
       encoder.setCount(0);
       
       radToTick = (2 * 3.1415 * reduction); // * (2 * 3.1415));
-      Ts = Ts * reduction;
-      Vm = Vm / reduction;
 
       tickTimer = millis();
-      torqueTimer = millis();
     }
 
     void update() {
@@ -42,35 +36,12 @@ class Motor {
       tickTimer = millis();
     }
 
-    /*void setTorque(float torque) {
-      /*if (getVel() > 0) {
-        torque += friction;
-      } else if (getVel() < 0) {
-        torque -= friction;
-      }
-      float torqueTerm = torque / Ts * 255;
-      float velTerm = getVel() / Vm * 255;
-
-      float changeTorqueTerm = 1 / 10 * (torque - old_torque) / (millis() - torqueTimer) * 255;
-      old_torque = torque;
-      torqueTimer = millis();
-
-      Serial.println(torqueTerm);
-      Serial.println(velTerm);
-      Serial.println(changeTorqueTerm);
-      Serial.println(" ");
-
-      //pwm_old += torqueTerm + changeTorqueTerm;
-      //pwm_old = constrain(pwm_old, -255, 255);
-      setPWM(torqueTerm + velTerm); //+ changeTorqueTerm);
-    }*/
-
     void setPWM(float voltage, bool print) {
       // int pwm = constrain(int(floatPWM), -255, 255);
       int pwm = constrain(int(255 * voltage), -255, 255);
-      int pwm2 = constrain(abs(pwm)+80,0,255);
+      int pwm2 = constrain(abs(pwm),0,255);
       if (print) {
-        if (abs(pwm) < 5) {
+        if (abs(pwm) < 1) {
           Serial.println(0);
         } else {
           Serial.println(pwm2);

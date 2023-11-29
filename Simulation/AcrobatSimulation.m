@@ -3,7 +3,7 @@ freq = 10 / 1000; % s to ms
 LoadAcrobatDynamics(@LoadRobotKinematics, true, freq);
 
 % Initial States
-theta1 = 0.01;
+theta1 = 0.015;
 theta2 = 0;
 w1 = 0;
 w2 = 0;
@@ -77,8 +77,7 @@ while (true)
     i = i + 1;
     if (mod(i, cast(1/100 / freq,"uint8")) == 0)
         % Edit Figure
-        [gx1,y1,gx2,y2] = coords(L1,Lc2,x(1),x(2));
-        [xR1,yR1,xR2,yR2] = coords(L1,Lc2,theta1R,q_ref(3));
+        [gx1,y1,gx2,y2] = coords(L1,Lc2,x(1),x(2));;
         set(l1,'XData',[0 gx1],'YData',[0 y1]);
         set(l2,'XData',[gx1 gx2],'YData',[y1 y2]);
         set(ball,'XData',gx2,'YData',y2);

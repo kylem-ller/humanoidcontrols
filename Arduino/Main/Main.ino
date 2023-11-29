@@ -6,7 +6,7 @@
 
 // State Machine
 enum Case { IDLE, CALIBRATE, BALANCE, TEST };
-Case c = CALIBRATE;
+Case c = IDLE;
 volatile bool buttonIsPressed = false;
 
 // Controller   
@@ -22,9 +22,9 @@ hw_timer_t * motorTimer = NULL;
 // portMUX_TYPE imuTimerMux = portMUX_INITIALIZER_UNLOCKED;*/
 
 //Initialization ------------------------------------
-/*void IRAM_ATTR buttonISR() {
+void IRAM_ATTR buttonISR() {
   buttonIsPressed = true;
-}*/
+}
 
 /*void IRAM_ATTR imuISR() {
   portENTER_CRITICAL_ISR(&imuTimerMux);
@@ -34,9 +34,9 @@ hw_timer_t * motorTimer = NULL;
 
 void setup() {
   Serial.begin(9600);
-  //pinMode(BTN, INPUT);
+  pinMode(BTN, INPUT);
   pinMode(LED_PIN, OUTPUT);
-  //attachInterrupt(BTN, buttonISR, RISING);
+  attachInterrupt(BTN, buttonISR, RISING);
 
   mainTimer = millis();
   buttonTimer = millis();
@@ -47,7 +47,6 @@ void setup() {
   timerAlarmEnable(imuTimer);*/
 
   controller.init();
-  toCalibrate();
 }
 
 void loop() {
@@ -71,9 +70,9 @@ void loop() {
       break;
 
     case BALANCE:
-      /*if (checkForButtonPress() || controller.falling()) { // Check if button has been pressed, or if the bot has tilted too much
+      if (checkForButtonPress() || controller.falling()) { // Check if button has been pressed, or if the bot has tilted too much
         toIdle(); // Change state to idle (turn off actuators)
-      }*/
+      }
       if (pastTime(mainTimer, 10)) {
         while(!pastTime(mainTimer, 12)) {}
         mainTimer = millis();
@@ -82,7 +81,6 @@ void loop() {
         controller.RW.update();
         controller.A2.update();
 
-        //Serial.println(controller.imu.getPos(), 5);
         float target[6] = {0, 0, 0, 0, 0, 0};
         controller.setTarget(target); // Run actuators to stabilize at position & velocity targets
       }
@@ -91,7 +89,7 @@ void loop() {
 }
 
 bool checkForButtonPress() {
-  if (!pastTime(buttonTimer, 750)) {
+  if (!pastTime(buttonTimer, 1000)) {
     buttonIsPressed = false;
   }
   if (buttonIsPressed) {
@@ -115,6 +113,7 @@ void toIdle() {
 void toBalance() {
   c = BALANCE;
   ledOn();
+  controller.stopActuators();
   controller.zeroState();
 }
 
@@ -137,7 +136,4 @@ void ledOn() {
 
 void ledOff() {
   digitalWrite(LED_PIN, LOW);
-}
-
-void update() { // temporary function until interrupt & i2c conflict resolved
 }

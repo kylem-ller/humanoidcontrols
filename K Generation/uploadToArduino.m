@@ -1,14 +1,9 @@
-function uploadToArduino(K, T1, T2)
+function uploadToArduino(K, H)
     file = fullfile(pwd,'Arduino','Main','K.h');
     fileID = fopen(file,'w');
 
     str = matrixToString(K) + "\n";
-    if (T1 ~= 0)
-        str = str + matrixToString(T1) + "\n";
-    end
-    if (T2 ~= 0)
-        str = str + matrixToString(T2) + "\n";
-    end
+    str = str + matrixToString(H) + "\n";
 
     fprintf(fileID, str);
     fclose(fileID);
