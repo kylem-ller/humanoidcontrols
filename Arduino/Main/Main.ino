@@ -3,9 +3,10 @@
 
 #define BTN 34
 #define LED_PIN 13
+#define POT 39
 
 // State Machine
-enum Case { IDLE, CALIBRATE, BALANCE, TEST };
+enum Case { IDLE, CALIBRATE, BALANCE };
 Case c = IDLE;
 volatile bool buttonIsPressed = false;
 
@@ -17,6 +18,7 @@ const float pi = 3.14159;
 int mainTimer;
 int buttonTimer;
 int calibrateTimer;
+int i = 0;
 /*hw_timer_t * imuTimer = NULL;
 hw_timer_t * motorTimer = NULL;
 // portMUX_TYPE imuTimerMux = portMUX_INITIALIZER_UNLOCKED;*/
@@ -35,6 +37,7 @@ void IRAM_ATTR buttonISR() {
 void setup() {
   Serial.begin(9600);
   pinMode(BTN, INPUT);
+  pinMode(POT, INPUT);
   pinMode(LED_PIN, OUTPUT);
   attachInterrupt(BTN, buttonISR, RISING);
 
@@ -57,6 +60,7 @@ void loop() {
       if (checkForButtonPress()) { // Check if button has been pressed
         toCalibrate(); // Change state to calibrate
       }
+      controller.stopActuators();
       break;
 
     case CALIBRATE:
@@ -64,6 +68,7 @@ void loop() {
         toIdle(); // Change state to idle
       }
       flashLight(); // Blink the LED
+      controller.stopActuators();
       if (pastTime(calibrateTimer, 3000)) { // Check if 3 seconds has passed in calibrate mode
         toBalance(); // Change state to balancing
       }
@@ -76,15 +81,22 @@ void loop() {
       if (pastTime(mainTimer, 10)) {
         while(!pastTime(mainTimer, 12)) {}
         mainTimer = millis();
-        
-        controller.LW.update();
-        controller.RW.update();
-        controller.A2.update();
 
-        float target[6] = {0, 0, 0, 0, 0, 0};
+        if (i <= 0) {
+          controller.LW.update();
+          controller.RW.update();
+          controller.A2.update();
+          i += 4;
+        }
+        float potVal = analogRead(POT);
+        float targetPos = ((potVal/4095-0.5) / 5);
+        // Serial.println(targetPos);
+        float target[6] = {targetPos, 0, 0, 0, 0, 0};
         controller.setTarget(target); // Run actuators to stabilize at position & velocity targets
       }
       break;
+
+    
   }
 }
 
@@ -113,7 +125,6 @@ void toIdle() {
 void toBalance() {
   c = BALANCE;
   ledOn();
-  controller.stopActuators();
   controller.zeroState();
 }
 
@@ -123,7 +134,7 @@ void toCalibrate() {
 }
 
 void flashLight() {
-  if ((millis() - buttonTimer) / 500 % 2) {
+  if ((millis() - calibrateTimer) / 500 % 2) {
     ledOn();
   } else {
     ledOff();

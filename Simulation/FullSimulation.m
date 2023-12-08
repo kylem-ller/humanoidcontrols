@@ -9,8 +9,12 @@ q_ref = [0; 0; 0; 0; 0; 0];
 u = [0; 0];
 
 % Cost Matrices
-R = diag([1/(1^2) 1/(1^2)]);
-Q = diag([1/(0.2)^2, 1/(pi/16)^2, 1/(pi/4)^2, 1/(wm*r/Gw)^2, 1/(pi/32)^2, 1/(pi/4)^2]);
+% R = diag([1/(1^2) 1/(1^2)]);
+% Q = diag([1/(0.2)^2, 1/(pi/16)^2, 1/(pi/4)^2, 1/(wm*r/Gw)^2, 1/(pi/32)^2, 1/(pi/4)^2]);
+% R = diag([1/(0.5^2) 1/(3^2)]);
+% Q = diag([1/(0.25)^2, 1/(pi/6)^2, 1/(pi/2)^2, 1/(1.5*wm*r/Gw)^2, 1/(pi/100)^2, 1/(2*pi)^2]);
+R = diag([1/(0.4^2) 1/(8^2)]);
+Q = diag([1/(0.25)^2, 1/(pi/12)^2, 1/(pi/2)^2, 1/(wm*r/Gw)^2, 1/(pi/80)^2, 1/(pi)^2]);
 
 % Initial Figure
 fig = figure();
@@ -32,12 +36,12 @@ while (true)
     x(2:3) = x(2:3) - 2*pi*floor((x(1:2)+pi)/(2*pi));
 
     % Update Linearization
-    A_now = double(A(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
-    B_now = double(B(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
-    H_now = double(H(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
-%     A_now = double(A(0,0,0,0,0,0,0,0));
-%     B_now = double(B(0,0,0,0,0,0,0,0));
-%     H_now = double(H(0,0,0,0,0,0,0,0));
+%     A_now = double(A(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
+%     B_now = double(B(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
+%     H_now = double(H(x(1),x(2),x(3),x(4),x(5),x(6),u(1),u(2)));
+    A_now = double(A(0,0,0,0,0,0,0,0));
+    B_now = double(B(0,0,0,0,0,0,0,0));
+    H_now = double(H(0,0,0,0,0,0,0,0));
 
     q = H_now*x;
     q(2:3) = q(2:3) - 2*pi*floor((x(1:2)+pi)/(2*pi));

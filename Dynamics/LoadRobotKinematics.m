@@ -16,8 +16,9 @@ function [r, L1, Lc1, Lc2, mw, m1, m2, Ic1, Ic2, Gw, G2, wm, Tm] = LoadRobotKine
     
     Gw = 40;
     G2 = 45;
-    wm = 2 * 3.1415 * 6000 / 60; % rad/s
-    Tm = 0.0025; % Nm
+    overvolt = 13 / 12;
+    wm = overvolt * 2 * 3.1415 * 6000 / 60; % rad/s
+    Tm = overvolt * 0.0025; % Nm
 
     assign(r);
     assign(L1);

@@ -13,8 +13,6 @@ class Controller {
     float state[6];
     float P[3] = {0, 0, 0};
     float target[6];
-    const float k2[2][6] = {{0, 2, 0, 0, 40, 0}, {0, 10, 4, 0, 40, 0.05}}; // Val 1 -> X Pos, Val 2 -> theta Pos, Val 4 -> X Vel, Val 5 -> Theta Vel
-    const float k3[2][6] = {{20, 2, 0, 5, 40, 0}, {0, 0, 0, 0, 0, 0}};
     const float fallingBound = 0.8*pi/2;
     float integralTimer;
   
@@ -44,16 +42,15 @@ class Controller {
     }
 
     void stopActuators() {
-      LW.setPWM(0, false);
-      RW.setPWM(0, false);
-      A2.setPWM(0, false);
+      LW.setPWM(0);
+      RW.setPWM(0);
+      A2.setPWM(0);
     }
     
     void setTarget(float newTarget[]) { //float newTarget[]) {
       for (int i = 0; i < 6; i++) {
         target[i] = newTarget[i];
       }
-
       updateState();
       controlActuators();
     }
@@ -65,42 +62,25 @@ class Controller {
       state[3] = r * (-imu.getVel() + (LW.getVel() + RW.getVel()) / 2);
       state[4] = imu.getVel();
       state[5] = A2.getVel();
-
-      state[1] += H[2][1] * state[2];
-      state[4] += H[5][4] * state[5];
-
-      /*P[0] += state[0] / 1000 * (millis() - integralTimer);
-      P[1] += state[1] / 1000 * (millis() - integralTimer);
-      P[1] *= 0.8;
-      if (abs(state[2] > pi/8)) {
-        P[2] += 1.4 * state[2] / 1000 * (millis() - integralTimer);
-      }
-      P[2] *= 0.98;
-      P[2] = constrain(P[2], -0.8, 0.8);
-      integralTimer = millis();*/
     }
 
     void controlActuators() {
       float TW = 0;
       float TA2 = 0;
       for (int i = 0; i < 6; i++) {
-        //TW += k2[0][i] * (target[i] - state[i]);
-        //TA2 += k2[1][i] * (target[i] - state[i]);
         TW += K[i][0] * (target[i] - state[i]);
         TA2 += K[i][1] * (target[i] - state[i]);
       }
-      //u = Km*(target - Hm*state);
-      // TA2 -= P[2];
-      // Serial.println(255 * P[2]);
-      // Serial.println(255 * TA2);
-      LW.setPWM(TW, false);
-      RW.setPWM(TW, false);
-      A2.setPWM(TA2, false);
-      /*if (abs(state[2]) > pi/1.2 && state[2]*TA2 > 0) {
-        A2.setPWM(0, true);
+      Serial.println(" ");
+      LW.setPWM(TW);
+      RW.setPWM(TW);
+      Serial.println(TW);
+      if (TA2 < 0.01) {
+        A2.setPWM(0);
       } else {
-        A2.setPWM(TA2, true); 
-      }*/
+        A2.setPWM(6 * TA2 + 0.3 * TA2 / abs(TA2));
+        Serial.println(8 * TA2 + 0.3 * TA2 / abs(TA2));
+      }
     }
 
     bool falling() {

@@ -36,19 +36,11 @@ class Motor {
       tickTimer = millis();
     }
 
-    void setPWM(float voltage, bool print) {
-      // int pwm = constrain(int(floatPWM), -255, 255);
+    void setPWM(float voltage) {
       int pwm = constrain(int(255 * voltage), -255, 255);
-      int pwm2 = constrain(abs(pwm),0,255);
-      if (print) {
-        if (abs(pwm) < 1) {
-          Serial.println(0);
-        } else {
-          Serial.println(pwm2);
-        }
-      }
-      analogWrite(PWM, pwm2);
-      if (abs(pwm) < 5) {
+      // Serial.println(pwm);
+      analogWrite(PWM, abs(pwm));
+      if (abs(pwm) < 3) {
         digitalWrite(IN_1, LOW);
         digitalWrite(IN_2, LOW);
       } else if (pwm > 0) {
