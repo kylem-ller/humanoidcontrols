@@ -37,8 +37,16 @@ function [A, B, f, H] = LoadFullDynamics(kinematics, includeTransfer, freq)
          G2*Tm*(V2-v2./wm*G2)];
     
     % Linearized State Space
-    f = [x0(end/2+1:end); M^(-1)*(T-V-G)];
+    % f = M^(-1)*(T-V-G);
+    acc = M^(-1)*(T-V-G);
+    f = (x0 + freq*[x0(end/2+1:end); acc] + .5*freq^2*[acc; zeros(3,1)]);
+
+    % f = [x0(end/2+1:end); M^(-1)*(T-V-G)];
+    % f2 = 0.5*freq^2*jacobian([M^(-1)*(T-V-G); zeros(3,1)], u0);
     A = jacobian(f, x0);
+    % A = jacobian([x0(end/2+1:end); f], x0);
+    % A = freq * A + eye(6);
+    % B = jacobian([.5*freq^2*f; freq*f], u0);
     B = jacobian(f, u0);
     
     % Transfer
@@ -47,6 +55,8 @@ function [A, B, f, H] = LoadFullDynamics(kinematics, includeTransfer, freq)
         dL3 = -(L1*Lc2*v2*sin(p2))/L3;
         p2c = p1 + asin(Lc2*sin(p2)/L3);
         v2c = v1 + Lc2/L3*(v2*cos(p2)-(dL3/L3*sin(p2)))/(L3^2*sqrt(1-((Lc2*sin(p2))/L3)^2));
+%         pc = m1*g*Lc1*sin(p1)+m2*g*L3*sin(p2);%(m1*p1+m2*p2c)/(m1+m2);
+%         vc = m1*g*Lc1*v1*cos(p1)+m2*g*(L3*v2*cos(p2)+dL3*sin(p2));%(m1*v1+m2*v2c)/(m1+m2);
         pc = (m1*p1+m2*p2c)/(m1+m2);
         vc = (m1*v1+m2*v2c)/(m1+m2);
 
@@ -61,16 +71,18 @@ function [A, B, f, H] = LoadFullDynamics(kinematics, includeTransfer, freq)
     end
 
     % Discretized State Space
-    A = freq * A + eye(6);
-    B = freq * B;
+%     A = freq * A + eye(6);
+%     B = freq * B;
 
     A(s0) = A;
     B(s0) = B;
     f(s0) = f;
+    f2(s0) = f2;
 
     assign(A);
     assign(B);
     assign(f);
+    assign(f2);
 end
 
 function assign(var)
